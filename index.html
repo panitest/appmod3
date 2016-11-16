@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+<title>Aula Bi - Módulo 3</title>
+<link rel="stylesheet"  href="modulo3.css" type="text/css" charset="utf-8" />
+<link rel="stylesheet" href="estilo_320.css" type="text/css" charset="utf-8" />
+<link rel="stylesheet" href="estilo_481.css" type="text/css" charset="utf-8" />
+<link rel="stylesheet" href="estilo_641.css" type="text/css" charset="utf-8" />
+<link rel="stylesheet" href="estilo_961.css" type="text/css" charset="utf-8" />
+
+<link href="https://fonts.googleapis.com/css?family=Lato:100,100i,300,300i,400,400i,700,700i,900,900i" rel="stylesheet">
+<style>
+html,body{width: 100%; height:100%; margin:0; padding:0; background:url(images/pizzarron.jpg) top center repeat;  background-color:#e6e6e6;  font-family: Verdana, Geneva, sans-serif; text-align:center;  } 
+#admin{ width:50px; height:50px; position:fixed; top:0; left:0; z-index:10000; background:url(images/Vacio.gif);}
+#panel{ width:100%; height:100%; position:fixed;z-index:20000; background:#CCC; display:none}
+label{ font-family:Verdana, Geneva, sans-serif; font-size:14px; color:#000; width:80%; margin:auto; display:block; margin-top:30px}
+input[type="button"]{ width:300px;padding:0; height:50px; margin:auto; display:block}
+input{ width:300px;padding:0; height:50px; margin:auto; display:block}
+#log{ font-family:Verdana, Geneva, sans-serif; font-size:12px; text-align:center}
+.btsuc{border:1px solid #A9A9A9; padding:3px; background:#F3F3F3; font-weight:normal; width:300px; margin:auto; margin-top:20px; line-height:50px;-webkit-box-shadow: 0px 2px 5px 0px rgba(50, 50, 50, 0.75);
+-moz-box-shadow:    0px 2px 5px 0px rgba(50, 50, 50, 0.75);
+box-shadow:         0px 2px 5px 0px rgba(50, 50, 50, 0.75);}
+#mensajes{ display:none;}
+</style>
+<script type="text/javascript" src="js/panino.js"></script>
+<script type="text/javascript" src="js/comunes.js"></script>
+<script type="text/javascript" src="js/paninoAJAX.js"></script>
+<script type="text/javascript" src="js/utils.js"></script>
+<script>
+
+function getPage(p,callback){
+		request(
+			p,
+			function(r){
+				scrollTo(0,0);
+				$('appcontainer').innerHTML=r;
+				if(typeof callback=='function'){
+					callback();
+				}
+			},
+			{}
+		);
+}
+function getRandomInt(min, max) {
+    	return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function inArray(needle, haystack) {
+    var length = haystack.length;
+    for(var i = 0; i < length; i++) {
+        if(haystack[i] == needle) return true;
+    }
+    return false;
+}
+
+
+
+
+
+
+function administrar(){
+	$('log').innerHTML='';
+	$('panel').style.display='block';
+}
+
+function testConexion(){
+		var im=new Image(),
+		t=setTimeout(
+				function(){
+					$('log').innerHTML='No hay conexión a internet.';
+				},
+				5000
+		);
+		im.onload=function(){
+			clearTimeout(t);
+			saveDataInServer();
+			return;
+		};
+		im.onerror=function(){
+			clearTimeout(t);
+			$('log').innerHTML='No hay conexión a internet.';
+			return;
+		};
+		im.src='http://servidordeapps.com/images/ajax-loader.gif?'+(+new Date());
+		
+}
+	
+	
+function exportar(){
+	$('log').innerHTML='<img src="images/ajax-loader.gif">';
+	testConexion();
+}
+function saveDataInServer(){
+		var data={'proceso':'savedataaulabi','datos':localStorage.getItem('datos')};
+		request(
+				'http://servidordeapps.com/proceso2.php',
+				function(r){
+					localStorage.removeItem('datos');
+					iniciotablet();
+					$('log').innerHTML='Los datos han sido guardados.';
+				},
+				data
+		);
+}
+function nueva_farmacia(){
+	if($('nuevaf').style.display!='block'){
+		$('nuevaf').style.display='block';
+	}else{
+		$('nuevaf').style.display='none';
+	}
+}
+function guardarsucursal(){
+	//nombre_farmacia
+	//direccion_farmacia
+	//cant_empleados_farmacia
+	var farmacia={};
+	farmacia['nombre']=$('nombre_farmacia').value;
+	farmacia['direccion']=$('direccion_farmacia').value;
+	farmacia['cant_usuarios']=$('cant_empleados_farmacia').value;
+	farmacia['tablet']=ns.tablet;
+	ns.datos.push(farmacia);
+	localStorage.setItem('datos',JSON.stringify(ns.datos));
+	
+	
+	$('panel').style.display='none';$('nuevaf').style.display='none';
+	$('nombre_farmacia').value=$('direccion_farmacia').value=$('cant_empleados_farmacia').value='';
+	alert('La sucursal ha sido guardada');
+}
+function iniciotablet(){
+	if(!localStorage.getItem('datos')){
+		ns.datos=[];
+	}else{
+		ns.datos=JSON.parse(localStorage.getItem('datos'));
+	}
+	if(!localStorage.getItem('tablet')){
+		ns.tablet=getRandomInt(1, 100)+'_'+(+new Date());
+		localStorage.setItem('tablet',ns.tablet);
+	}else{
+		ns.tablet=localStorage.getItem('tablet');
+	}
+}
+DR(iniciotablet);
+function getError(e){
+	alert(e);
+}
+function n1(){
+	getPage('nivel1-intro.html');
+}
+function b1(){
+	getPage('nivel1-encontrar.html',linkn1);
+}
+ns.errores=[];
+function linkn1(){
+	$('Base').onclick=function(e){stopEvent(e);ko();};
+	$('vidrio_sucio').onclick=function(e){stopEvent(e);ok(1);};
+	$('vidrio_roto').onclick=function(e){stopEvent(e);ok(2);};
+	$('escalones').onclick=function(e){stopEvent(e);ok(3);};
+}
+function ko(){
+	$('mensajes').className='cajadelosalerts mal';
+	$('mensajes').innerHTML='<img src="images/incorrecto.png" width="100%" height="auto" alt="correcto"> Intentá nuevamente';
+	$('mensajes').style.display='block';
+	setTimeout(
+		function(){
+			$('mensajes').style.display='none';
+		},
+		1000
+	);
+}
+function ok(n){
+	switch(n){
+		case 1:
+		$('mensajes').innerHTML='<img src="images/correcto.png" width="100%" height="auto" alt="correcto">La limpieza es muy importante en un negocio que trata bien a sus clientes.';
+		$('vidrio_sucio').onclick=function(){};
+		
+		break;
+		case 2:
+		$('mensajes').innerHTML='<img src="images/correcto.png" width="100%" height="auto" alt="correcto">Es importante que las instalaciones sean seguras para los clientes.';
+		$('vidrio_roto').onclick=function(){};
+		break;
+		case 3:
+		$('mensajes').innerHTML='<img src="images/correcto.png" width="100%" height="auto" alt="correcto">La accesibilidad es muy importante para tus clientes.';
+		$('escalones').onclick=function(){};
+		break;
+	}
+	$('mensajes').className='cajadelosalerts bien';
+	$('mensajes').style.display='block';
+	setTimeout(
+		function(){
+			$('mensajes').style.display='none';
+		},
+		2500
+	);
+	if(!inArray('e'+n, ns.errores)){
+		ns.errores.push('e'+n);
+	}
+	$('p'+ns.errores.length).src='images/pastilla-bien.png';
+	if(ns.errores.length>2){
+		setTimeout(
+		n2,
+		3000
+	);
+	}
+}
+function n2(){
+	ns.errores=[];
+	getPage('nivel2-intro.html');
+}
+function linkn2(){
+	$('Base').onclick=function(e){stopEvent(e);ko();};
+	$('estanteria_vacia').onclick=function(e){stopEvent(e);ok2(1);};
+	$('sin_guardapolvo').onclick=function(e){stopEvent(e);ok2(2);};
+	$('charlando').onclick=function(e){stopEvent(e);ok2(3);};
+}
+function ok2(n){
+	switch(n){
+		case 1:
+		$('mensajes').innerHTML='<img src="images/correcto.png" width="100%" height="auto" alt="correcto">Es importante que los productos estén bien exhibidos.';
+		$('estanteria_vacia').onclick=function(){};
+		
+		break;
+		case 2:
+		$('mensajes').innerHTML='<img src="images/correcto.png" width="100%" height="auto" alt="correcto">Es importante que tengas el uniforme correspondiente para que los clientes puedan identificarte.';
+		$('sin_guardapolvo').onclick=function(){};
+		break;
+		case 3:
+		$('mensajes').innerHTML='<img src="images/correcto.png" width="100%" height="auto" alt="correcto">Es importante que estés atento a tus clientes.';
+		$('charlando').onclick=function(){};
+		break;
+	}
+	$('mensajes').className='cajadelosalerts bien';
+	$('mensajes').style.display='block';
+	setTimeout(
+		function(){
+			$('mensajes').style.display='none';
+		},
+		2500
+	);
+	if(!inArray('e'+n, ns.errores)){
+		ns.errores.push('e'+n);
+	}
+	$('p'+ns.errores.length).src='images/pastilla-bien.png';
+	if(ns.errores.length>2){
+		setTimeout(
+		n3,
+		3000
+	);
+	}
+}
+function n3(){
+	ns.errores=[];
+	getPage('nivel3-intro.html');
+}
+function linkn3(){
+	$('Base').onclick=function(e){stopEvent(e);ko();};
+	$('no_pin').onclick=function(e){stopEvent(e);ok3(1);};
+	$('no_celular').onclick=function(e){stopEvent(e);ok3(2);};
+}
+function ok3(n){
+	switch(n){
+		case 1:
+		$('mensajes').innerHTML='<img src="images/correcto.png" width="100%" height="auto" alt="correcto">Es importante que tengas una identificacion con tu nombre.';
+		$('no_pin').onclick=function(){};
+		
+		break;
+		case 2:
+		$('mensajes').innerHTML='<img src="images/correcto.png" width="100%" height="auto" alt="correcto">Es importante que estes atento a tus clientes.';
+		$('no_celular').onclick=function(){};
+		break;
+		
+	}
+	$('mensajes').className='cajadelosalerts bien';
+	$('mensajes').style.display='block';
+	setTimeout(
+		function(){
+			$('mensajes').style.display='none';
+		},
+		2500
+	);
+	if(!inArray('e'+n, ns.errores)){
+		ns.errores.push('e'+n);
+	}
+	$('p'+ns.errores.length).src='images/pastilla-bien.png';
+	if(ns.errores.length>1){
+		setTimeout(
+		fin,
+		3000
+	);
+	}
+}
+function fin(){
+	ns.errores=[];
+	getPage('final.html');
+}
+</script>
+</head>
+
+<body bgcolor="#1f7bc8">
+<div id="admin" onClick="administrar()"></div>
+<div id="panel" style="width:100%; height:100%; position:absolute; top:0; left:0;">
+
+<div style="font-family:Verdana, Geneva, sans-serif; font-size:30px; font-weight:bold; width:80px; height:80px; position:absolute; top:0px; right:0px; text-align:center; line-height:50px; color:#000" onClick="$('panel').style.display='none';$('nuevaf').style.display='none';">x</div>
+
+
+<label><br>
+<input type="button" name="" value="Nueva Sucursal" onClick="nueva_farmacia()">
+</label>
+<div id="nuevaf" style="display:none">
+Nombre:<br>
+<input id="nombre_farmacia" type="text"><br>
+Dirección:<br>
+<input id="direccion_farmacia" type="text"><br>
+Cantidad de empleados:<br>
+<input id="cant_empleados_farmacia" type="text"><br>
+<div onClick="guardarsucursal()" class="btsuc">Guardar sucursal</div>
+</div>
+
+
+<label><br>
+<input type="button" name="" value="Exportar Datos" onClick="exportar()">
+</label>
+<div id="log"></div>
+
+</div>
+
+
+<div id="appcontainer">
+<div class="cajahome">
+<div class="cajadetextohome">
+<img src="images/encuentra.png" width="100%" height="auto"><br>
+Verás a continuación una serie de imágenes <br>
+con errores en la Calidad de Atención. <br>
+Debes descubrirlos tocando o <br>
+clickeando en los mismos.<br>
+<br>
+<div onClick="n1()" class="btcomenzar"><img src="images/bt-comenzar.png" alt="Botón Comenzar" class="btcomenzar"></div>
+</div>
+<img src="images/back-home.jpg" width="100%" height="auto">
+</div>
+</div>
+<div class="cajadelosalerts mal" id="mensajes">
+<img src="images/incorrecto.png" width="100%" height="auto" alt="correcto"> Intentá nuevamente
+</div>
+</body>
+</html>
